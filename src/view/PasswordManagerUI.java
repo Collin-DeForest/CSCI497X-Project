@@ -78,9 +78,10 @@ public class PasswordManagerUI {
         splitPane.setDividerLocation(200);
         root.add(splitPane, BorderLayout.CENTER);
 
-        // Button bar (clear, add, delete, exit)
+        // Button bar (clear, add, retrieve, delete, exit)
         JPanel buttons = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 0));
         JButton addBtn = new JButton("Add");
+        JButton retrieveBtn = new JButton("Retrieve");
         JButton deleteBtn = new JButton("Delete");
         JButton clearBtn = new JButton("Clear");
         JButton exitBtn = new JButton("Exit");
@@ -107,14 +108,27 @@ public class PasswordManagerUI {
             refreshTable();
         });
 
+        retrieveBtn.addActionListener(e -> {
+            int selectedRow = table.getSelectedRow();
+            if(selectedRow == -1){
+                JOptionPane.showMessageDialog(frame, "Please select an entry to retrieve.", "Error", JOptionPane.ERROR_MESSAGE);
+                return;
+            }else{
+                JOptionPane.showMessageDialog(frame, "Website/App: " + controller.getEntry(selectedRow).getSite() + "\nUsername: " + controller.getEntry(selectedRow).getUsername() + "\nPassword: "   + controller.getEntry(selectedRow).getPassword(), "Info", JOptionPane.INFORMATION_MESSAGE);
+            }
+            
+            refreshTable();
+        });
+
         // clear button listener 
         clearBtn.addActionListener(e -> clearFields());
 
         // exit button listener
         exitBtn.addActionListener(e -> frame.dispose());
 
-        buttons.add(clearBtn);
         buttons.add(addBtn);
+        buttons.add(retrieveBtn);
+        buttons.add(clearBtn);
         buttons.add(deleteBtn);
         buttons.add(exitBtn);
 
