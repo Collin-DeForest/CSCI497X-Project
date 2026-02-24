@@ -116,8 +116,6 @@ public class PasswordManagerUI {
             }else{
                 JOptionPane.showMessageDialog(frame, "Website/App: " + controller.getEntry(selectedRow).getSite() + "\nUsername: " + controller.getEntry(selectedRow).getUsername() + "\nPassword: "   + controller.getEntry(selectedRow).getPassword(), "Info", JOptionPane.INFORMATION_MESSAGE);
             }
-            
-            refreshTable();
         });
 
         // clear button listener 
