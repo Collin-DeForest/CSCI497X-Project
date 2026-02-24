@@ -1,5 +1,9 @@
+package view;
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
+import javax.swing.table.DefaultTableModel;
+import controller.PasswordController;
+
 import java.awt.*;
 
 public class PasswordManagerUI {
@@ -8,13 +12,16 @@ public class PasswordManagerUI {
     private final JTextField siteField;
     private final JTextField userField;
     private final JPasswordField passField;
+    private final PasswordController controller;
+    private final DefaultTableModel tableModel;
 
-    public PasswordManagerUI() {
+    public PasswordManagerUI(PasswordController controller) {
+        this.controller = controller;
 
         // main frame setup
         frame = new JFrame("Local Password Manager");
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        frame.setSize(600, 380);
+        frame.setSize(700, 550);
         frame.setLocationRelativeTo(null);
 
         JPanel root = new JPanel(new BorderLayout(16, 16));
@@ -51,11 +58,54 @@ public class PasswordManagerUI {
         addRow(card, c, 1, "Username", userField);
         addRow(card, c, 2, "Password", passField);
 
-        // Button bar (clear, add, exit)
+        // Table to display saved entries
+        String[] columns = {"Website / App", "Username", "Password"};
+        tableModel = new DefaultTableModel(columns, 0) {
+            // make sure you cant edit the table
+            @Override
+            public boolean isCellEditable(int row, int column) {
+                return false;
+            }
+        };
+
+        JTable table = new JTable(tableModel);
+        table.setRowHeight(24);
+        JScrollPane scrollPane = new JScrollPane(table);
+        scrollPane.setBorder(BorderFactory.createTitledBorder("Saved Passwords"));
+        
+        // Split input card and table vertically
+        JSplitPane splitPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT, card, scrollPane);
+        splitPane.setDividerLocation(200);
+        root.add(splitPane, BorderLayout.CENTER);
+
+        // Button bar (clear, add, delete, exit)
         JPanel buttons = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 0));
         JButton addBtn = new JButton("Add");
+        JButton deleteBtn = new JButton("Delete");
         JButton clearBtn = new JButton("Clear");
         JButton exitBtn = new JButton("Exit");
+        
+        // Add button listener
+        addBtn.addActionListener(e -> {
+            try{
+                controller.addEntry(siteField.getText(), userField.getText(), new String(passField.getPassword()));
+                refreshTable();
+                clearFields();
+            }catch(IllegalArgumentException ex){
+                JOptionPane.showMessageDialog(frame, ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+            }
+        });
+
+        // Delete button listener
+        deleteBtn.addActionListener(e -> {
+            int selectedRow = table.getSelectedRow();
+            if(selectedRow == -1){
+                JOptionPane.showMessageDialog(frame, "Please select an entry to delete.", "Error", JOptionPane.ERROR_MESSAGE);
+                return;
+            }
+            controller.deleteEntry(selectedRow);
+            refreshTable();
+        });
 
         // clear button listener 
         clearBtn.addActionListener(e -> clearFields());
@@ -65,9 +115,22 @@ public class PasswordManagerUI {
 
         buttons.add(clearBtn);
         buttons.add(addBtn);
+        buttons.add(deleteBtn);
         buttons.add(exitBtn);
 
         root.add(buttons, BorderLayout.SOUTH);
+    }
+
+    // Refreshes the table with current entries from the controller
+    private void refreshTable() {
+        tableModel.setRowCount(0);
+        for (int i = 0; i < controller.getEntryCount(); i++) {
+            tableModel.addRow(new Object[]{
+                controller.getEntry(i).getSite(),
+                controller.getEntry(i).getUsername(),
+                "********"
+            });
+        }
     }
 
     // called by PasswordManager main method
