@@ -22,6 +22,7 @@ public class PasswordManager2FA {
         codeField = new JTextField();
 
         JButton verifyButton = new JButton("Verify");
+        JButton skipButton = new JButton("Skip (Dev Only)");
 
         verifyButton.addActionListener(e -> {
             String entered = codeField.getText();
@@ -34,9 +35,18 @@ public class PasswordManager2FA {
             }
         });
 
+        skipButton.addActionListener(e -> {
+            frame.dispose();
+            onSuccess.run();
+        });
+
+        JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
+        buttonPanel.add(skipButton);
+        buttonPanel.add(verifyButton);
+
         panel.add(label, BorderLayout.NORTH);
         panel.add(codeField, BorderLayout.CENTER);
-        panel.add(verifyButton, BorderLayout.SOUTH);
+        panel.add(buttonPanel, BorderLayout.SOUTH);
 
         frame.setContentPane(panel);
         frame.pack();
