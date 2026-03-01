@@ -1,4 +1,4 @@
-package view;
+package com.raven.passwordmanager.view;
 
 import javax.swing.*;
 import java.awt.*;

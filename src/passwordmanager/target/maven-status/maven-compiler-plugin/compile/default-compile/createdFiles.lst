@@ -1,0 +1,9 @@
+com/raven/passwordmanager/model/PasswordStorage.class
+com/raven/passwordmanager/view/PasswordManagerSignIn.class
+com/raven/passwordmanager/view/PasswordManager2FA.class
+com/raven/passwordmanager/PasswordManager.class
+com/raven/passwordmanager/controller/PasswordController.class
+com/raven/passwordmanager/model/TwoFactor.class
+com/raven/passwordmanager/model/PasswordEntry.class
+com/raven/passwordmanager/view/PasswordManagerUI.class
+com/raven/passwordmanager/view/PasswordManagerUI$1.class

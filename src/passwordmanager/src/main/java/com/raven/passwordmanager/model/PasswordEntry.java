@@ -1,4 +1,4 @@
-package model;
+package com.raven.passwordmanager.model;
 
 public class PasswordEntry{
     private String site;

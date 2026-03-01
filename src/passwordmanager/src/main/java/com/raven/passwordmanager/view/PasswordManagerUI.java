@@ -1,8 +1,8 @@
-package view;
+package com.raven.passwordmanager.view;
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import javax.swing.table.DefaultTableModel;
-import controller.PasswordController;
+import com.raven.passwordmanager.controller.PasswordController;
 
 import java.awt.*;
 
