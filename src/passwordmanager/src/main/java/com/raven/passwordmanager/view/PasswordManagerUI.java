@@ -108,14 +108,19 @@ public class PasswordManagerUI {
             refreshTable();
         });
 
+        // Show the credentials for the selected entry in a popup
         retrieveBtn.addActionListener(e -> {
             int selectedRow = table.getSelectedRow();
             if(selectedRow == -1){
                 JOptionPane.showMessageDialog(frame, "Please select an entry to retrieve.", "Error", JOptionPane.ERROR_MESSAGE);
                 return;
-            }else{
-                JOptionPane.showMessageDialog(frame, "Website/App: " + controller.getEntry(selectedRow).getSite() + "\nUsername: " + controller.getEntry(selectedRow).getUsername() + "\nPassword: "   + controller.getEntry(selectedRow).getPassword(), "Info", JOptionPane.INFORMATION_MESSAGE);
             }
+            String site = controller.getEntry(selectedRow).getSite();
+            String username = controller.getEntry(selectedRow).getUsername();
+            String password = controller.getEntry(selectedRow).getPassword();
+            JOptionPane.showMessageDialog(frame,
+                "Website / App: " + site + "\nUsername: " + username + "\nPassword: " + password,
+                "Login Information", JOptionPane.INFORMATION_MESSAGE);
         });
 
         // clear button listener 
@@ -134,12 +139,12 @@ public class PasswordManagerUI {
     }
 
     // Refreshes the table with current entries from the controller
-    private void refreshTable() {
+    private void refreshTable(){
         tableModel.setRowCount(0);
-        for (int i = 0; i < controller.getEntryCount(); i++) {
+        for(int i = 0; i < controller.getEntryCount(); i++){
             tableModel.addRow(new Object[]{
                 controller.getEntry(i).getSite(),
-                controller.getEntry(i).getUsername(),
+                "********",
                 "********"
             });
         }
