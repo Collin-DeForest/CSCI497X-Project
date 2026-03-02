@@ -1,0 +1,8 @@
+/home/cedef/CSCI497X/Project/CSCI497X-Project/src/passwordmanager/src/main/java/com/raven/passwordmanager/PasswordManager.java
+/home/cedef/CSCI497X/Project/CSCI497X-Project/src/passwordmanager/src/main/java/com/raven/passwordmanager/controller/PasswordController.java
+/home/cedef/CSCI497X/Project/CSCI497X-Project/src/passwordmanager/src/main/java/com/raven/passwordmanager/model/PasswordEntry.java
+/home/cedef/CSCI497X/Project/CSCI497X-Project/src/passwordmanager/src/main/java/com/raven/passwordmanager/model/PasswordStorage.java
+/home/cedef/CSCI497X/Project/CSCI497X-Project/src/passwordmanager/src/main/java/com/raven/passwordmanager/model/TwoFactor.java
+/home/cedef/CSCI497X/Project/CSCI497X-Project/src/passwordmanager/src/main/java/com/raven/passwordmanager/view/PasswordManager2FA.java
+/home/cedef/CSCI497X/Project/CSCI497X-Project/src/passwordmanager/src/main/java/com/raven/passwordmanager/view/PasswordManagerSignIn.java
+/home/cedef/CSCI497X/Project/CSCI497X-Project/src/passwordmanager/src/main/java/com/raven/passwordmanager/view/PasswordManagerUI.java

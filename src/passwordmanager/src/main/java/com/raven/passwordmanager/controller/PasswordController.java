@@ -1,7 +1,7 @@
-package controller;
+package com.raven.passwordmanager.controller;
 
-import model.PasswordEntry;
-import model.PasswordStorage;
+import com.raven.passwordmanager.model.PasswordEntry;
+import com.raven.passwordmanager.model.PasswordStorage;
 
 public class PasswordController{
     private final PasswordStorage model;
