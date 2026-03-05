@@ -1,5 +1,7 @@
 package com.raven.passwordmanager.controller;
 
+import java.util.List;
+
 import com.raven.passwordmanager.model.PasswordEntry;
 import com.raven.passwordmanager.model.PasswordStorage;
 
@@ -29,12 +31,8 @@ public class PasswordController{
         return model.size();
     }
 
-    public String[][] getTableData(){
-        String[][] data = new String[model.size()][2];
-        for(int i = 0; i < model.size(); i++) {
-            data[i][0] = model.getEntry(i).getSite();
-            data[i][1] = model.getEntry(i).getUsername();
-        }
-        return data;
+    public List<PasswordEntry> getAllEntries(){
+        return model.getAllEntries();
     }
+
 }

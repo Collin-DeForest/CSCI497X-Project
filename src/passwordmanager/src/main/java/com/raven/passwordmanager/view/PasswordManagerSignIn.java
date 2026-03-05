@@ -3,6 +3,7 @@ package com.raven.passwordmanager.view;
 import javax.swing.*;
 import java.awt.*;
 import java.io.File;
+import java.util.function.Consumer;
 import com.raven.passwordmanager.model.MasterPasswordManager;
 
 // Sign in screen handles both a first time user and a returning user
@@ -10,7 +11,7 @@ public class PasswordManagerSignIn {
 
     private final JFrame frame;
 
-    public PasswordManagerSignIn(Runnable onContinue){
+    public PasswordManagerSignIn(Consumer<String> onContinue){
 
         frame = new JFrame("Sign In");
         frame.setLocationRelativeTo(null);
@@ -27,7 +28,7 @@ public class PasswordManagerSignIn {
     }
 
     // Returning user just needs to enter their master password to proceed
-    private void showLoginScreen(Runnable onContinue){
+    private void showLoginScreen(Consumer<String> onContinue){
         JPanel panel = new JPanel(new BorderLayout(10, 10));
         panel.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
 
@@ -51,18 +52,19 @@ public class PasswordManagerSignIn {
                 JOptionPane.showMessageDialog(frame, "Please enter your master password.", "Error", JOptionPane.ERROR_MESSAGE);
                 return;
             }
-            // TODO verify master password against stored hash here
+            // Verify if the user entered a matching master password
             try{
                 if(!MasterPasswordManager.verifyMasterPassword(enteredPassword)){
                     JOptionPane.showMessageDialog(frame, "Incorrect password.", "Error", JOptionPane.ERROR_MESSAGE);
                     return;
                 }
+                // Pass the master password forward the key will be derived after 2FA
+                frame.dispose();
+                onContinue.accept(enteredPassword);
             }catch(Exception ex){
                 JOptionPane.showMessageDialog(frame, "Error verifying password.", "Error", JOptionPane.ERROR_MESSAGE);
                 return;
             }
-            frame.dispose();
-            onContinue.run();
         });
 
         panel.add(title, BorderLayout.NORTH);
@@ -73,7 +75,7 @@ public class PasswordManagerSignIn {
     }
 
     // first time setup create a new master password and store it
-    private void showFirstTimeSetup(Runnable onContinue){
+    private void showFirstTimeSetup(Consumer<String> onContinue){
         JPanel panel = new JPanel(new BorderLayout(10, 10));
         panel.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
 
@@ -121,15 +123,16 @@ public class PasswordManagerSignIn {
                 return;
             }
 
-            // todo hash and save master password here
+            // create the master password and save it
             try{
                 MasterPasswordManager.createMasterPassword(newPassword);
+                // Pass the master password forward the key will be derived after 2FA
+                frame.dispose();
+                onContinue.accept(newPassword);
             }catch(Exception ex){
                 JOptionPane.showMessageDialog(frame, "Error saving password.", "Error", JOptionPane.ERROR_MESSAGE);
                 return;
             }
-            frame.dispose();
-            onContinue.run();
         });
 
         panel.add(title, BorderLayout.NORTH);

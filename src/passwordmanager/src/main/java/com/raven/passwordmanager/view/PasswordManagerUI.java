@@ -3,6 +3,9 @@ import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import javax.swing.table.DefaultTableModel;
 import com.raven.passwordmanager.controller.PasswordController;
+import com.raven.passwordmanager.model.PasswordEntry;
+import com.raven.passwordmanager.model.VaultEncryption;
+import java.util.List;
 
 import java.awt.*;
 
@@ -14,9 +17,11 @@ public class PasswordManagerUI {
     private final JPasswordField passField;
     private final PasswordController controller;
     private final DefaultTableModel tableModel;
+    private final byte[] key;
 
-    public PasswordManagerUI(PasswordController controller) {
+    public PasswordManagerUI(PasswordController controller, byte[] key){
         this.controller = controller;
+        this.key = key;
 
         // main frame setup
         frame = new JFrame("Local Password Manager");
@@ -67,6 +72,16 @@ public class PasswordManagerUI {
                 return false;
             }
         };
+
+        // Decrypt the vault file and load all the saved entries on startup
+        try{
+            List<PasswordEntry> entries = VaultEncryption.decrypt(key);
+            for(PasswordEntry entry : entries){
+                controller.addEntry(entry.getSite(), entry.getUsername(), entry.getPassword());
+            }
+        }catch(Exception ex){
+            JOptionPane.showMessageDialog(null, "Error loading vault.", "Error", JOptionPane.ERROR_MESSAGE);
+        }
 
         JTable table = new JTable(tableModel);
         table.setRowHeight(24);
@@ -126,8 +141,15 @@ public class PasswordManagerUI {
         // clear button listener 
         clearBtn.addActionListener(e -> clearFields());
 
-        // exit button listener
-        exitBtn.addActionListener(e -> frame.dispose());
+        // exit button listener, encrypts and saves all entires to vault.txt then closes the app
+        exitBtn.addActionListener(e -> {
+            try{
+                VaultEncryption.encrypt(controller.getAllEntries(), key);
+            }catch(Exception ex){
+                JOptionPane.showMessageDialog(frame, "Error saving vault.", "Error", JOptionPane.ERROR_MESSAGE);
+            }
+            frame.dispose();
+        });
 
         buttons.add(addBtn);
         buttons.add(retrieveBtn);
@@ -136,6 +158,8 @@ public class PasswordManagerUI {
         buttons.add(exitBtn);
 
         root.add(buttons, BorderLayout.SOUTH);
+
+        refreshTable();
     }
 
     // Refreshes the table with current entries from the controller
@@ -144,7 +168,7 @@ public class PasswordManagerUI {
         for(int i = 0; i < controller.getEntryCount(); i++){
             tableModel.addRow(new Object[]{
                 controller.getEntry(i).getSite(),
-                "********",
+                controller.getEntry(i).getUsername(),
                 "********"
             });
         }
