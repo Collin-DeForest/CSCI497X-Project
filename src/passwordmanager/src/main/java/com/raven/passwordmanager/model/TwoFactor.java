@@ -71,6 +71,10 @@ public class TwoFactor {
         );
     }
 
+    public boolean isSetupRequired() {
+        return !Files.exists(Paths.get("two_factor_secret.txt"));
+    }
+
     public boolean verify(String code) {
         try {
             int expected = totp.generateOneTimePassword(key, Instant.now());

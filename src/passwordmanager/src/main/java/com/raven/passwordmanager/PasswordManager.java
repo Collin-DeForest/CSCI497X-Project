@@ -14,24 +14,7 @@ public class PasswordManager {
         SwingUtilities.invokeLater(() -> {
             PasswordStorage model = new PasswordStorage();
             PasswordController controller = new PasswordController(model);
-
-            TwoFactor twoFactor = new TwoFactor();
-
-            PasswordManagerSignIn signIn = new PasswordManagerSignIn(password -> {
-            PasswordManager2FA twoFactorUI = new PasswordManager2FA(twoFactor, () -> {
-                try{
-                    // Only derive the key after 2FA is completed
-                    byte[] key = MasterPasswordManager.deriveKey(password);
-                    PasswordManagerUI ui = new PasswordManagerUI(controller, key);
-                    ui.show();
-                }catch(Exception ex){
-                    JOptionPane.showMessageDialog(null, "Error deriving key.", "Error", JOptionPane.ERROR_MESSAGE);
-                }
-            });
-            twoFactorUI.show();
-        });
-
-            signIn.show();
+            controller.start();
         });
     }
 }

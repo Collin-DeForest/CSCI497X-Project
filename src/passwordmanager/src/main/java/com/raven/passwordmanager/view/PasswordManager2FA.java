@@ -16,7 +16,7 @@ public class PasswordManager2FA {
     private final JFrame frame;
     private final JTextField codeField;
 
-    public PasswordManager2FA(TwoFactor twoFactor, Runnable onSuccess) {
+    public PasswordManager2FA(TwoFactor twoFactor,boolean showQRCode, Runnable onSuccess) {
         frame = new JFrame("Two-Factor Authentication");
         frame.setLocationRelativeTo(null);
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -27,12 +27,15 @@ public class PasswordManager2FA {
         panel.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
 
         // QR code panel
-        String otpAuthURL = twoFactor.getOtpAuthURL("user@example.com", "PasswordManager"); // Just using example email for now
-        BufferedImage QRCodeImage = generateQRCodeImage(otpAuthURL);
-        JLabel QRCodeLabel = new JLabel(new ImageIcon(QRCodeImage));
-        JPanel QRCodePanel = new JPanel(new FlowLayout());
-        QRCodePanel.add(QRCodeLabel);
-        panel.add(QRCodePanel);
+        if(showQRCode == true){
+            String otpAuthURL = twoFactor.getOtpAuthURL("user@example.com", "PasswordManager");
+            BufferedImage QRCodeImage = generateQRCodeImage(otpAuthURL);
+            JLabel QRCodeLabel = new JLabel(new ImageIcon(QRCodeImage));
+            JPanel QRCodePanel = new JPanel(new FlowLayout());
+            QRCodePanel.add(QRCodeLabel);
+            panel.add(QRCodePanel);
+        }
+        
 
         JLabel label = new JLabel("Enter 6-Digit Code: ");
         codeField = new JTextField(6);
