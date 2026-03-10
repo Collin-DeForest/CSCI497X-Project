@@ -34,10 +34,7 @@ public class PasswordManagerUI {
         JPanel header = new JPanel(new GridLayout(2, 1));
         JLabel title = new JLabel("Password Vault");
         title.setFont(title.getFont().deriveFont(Font.BOLD, 20f));
-        JLabel subtitle = new JLabel("Phase 1: UI skeleton (not functional yet)");
-        subtitle.setFont(subtitle.getFont().deriveFont(13f));
         header.add(title);
-        header.add(subtitle);
         root.add(header, BorderLayout.NORTH);
 
         // Card panel for inputs
