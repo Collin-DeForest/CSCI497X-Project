@@ -43,6 +43,13 @@
       <version>1.17.0</version>
   </dependency>
 
+  <!-- Password strength detection -->
+  <dependency>
+      <groupId>com.nulab-inc</groupId>
+      <artifactId>zxcvbn</artifactId>
+      <version>1.9.0</version>
+  </dependency>
+
     <!-- QR code generation -->
     <dependency>
         <groupId>com.google.zxing</groupId>
