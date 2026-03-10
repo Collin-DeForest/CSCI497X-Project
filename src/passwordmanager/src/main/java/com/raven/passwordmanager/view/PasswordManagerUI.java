@@ -1,4 +1,5 @@
 package com.raven.passwordmanager.view;
+
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import javax.swing.table.DefaultTableModel;
@@ -14,6 +15,7 @@ public class PasswordManagerUI {
     private final JPasswordField passField;
     private final PasswordController controller;
     private final DefaultTableModel tableModel;
+    private JTable table;
 
     public PasswordManagerUI(PasswordController controller) {
         this.controller = controller;
@@ -53,54 +55,76 @@ public class PasswordManagerUI {
         siteField = new JTextField();
         userField = new JTextField();
         passField = new JPasswordField();
+        JButton generatePassBtn = new JButton("Generate");
+        generatePassBtn.addActionListener(e -> passField.setText(controller.generatePassword()));
+
+        JButton toggleVisBtn = new JButton("Show");
+        toggleVisBtn.addActionListener(e -> {
+            if (passField.getEchoChar() == 0) {
+                passField.setEchoChar('•');
+                toggleVisBtn.setText("Show");
+            } else {
+                passField.setEchoChar((char) 0);
+                toggleVisBtn.setText("Hide");
+            }
+        });
 
         addRow(card, c, 0, "Website / App", siteField);
         addRow(card, c, 1, "Username", userField);
         addRow(card, c, 2, "Password", passField);
 
+        // Add generate button on same row
+        c.gridx = 2;
+        c.gridy = 2;
+        c.weightx = 0;
+        card.add(generatePassBtn, c);
+
+        c.gridx = 3;
+        card.add(toggleVisBtn, c);
+
         // Table to display saved entries
         String[] columns = {"Website / App", "Username", "Password"};
         tableModel = new DefaultTableModel(columns, 0) {
-            // make sure you cant edit the table
             @Override
             public boolean isCellEditable(int row, int column) {
                 return false;
             }
         };
 
-        JTable table = new JTable(tableModel);
+        table = new JTable(tableModel);
         table.setRowHeight(24);
         JScrollPane scrollPane = new JScrollPane(table);
         scrollPane.setBorder(BorderFactory.createTitledBorder("Saved Passwords"));
-        
-        // Split input card and table vertically
+
         JSplitPane splitPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT, card, scrollPane);
         splitPane.setDividerLocation(200);
         root.add(splitPane, BorderLayout.CENTER);
 
-        // Button bar (clear, add, retrieve, delete, exit)
+        // Button bar
         JPanel buttons = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 0));
         JButton addBtn = new JButton("Add");
         JButton retrieveBtn = new JButton("Retrieve");
         JButton deleteBtn = new JButton("Delete");
         JButton clearBtn = new JButton("Clear");
+        JButton checkBtn = new JButton("Check Password");
+        JButton checkAllBtn = new JButton("Check All Passwords");
         JButton exitBtn = new JButton("Exit");
-        
-        // Add button listener
+
+        // Add
         addBtn.addActionListener(e -> {
-            try{
+            try {
                 controller.addEntry(siteField.getText(), userField.getText(), new String(passField.getPassword()));
                 refreshTable();
                 clearFields();
-            }catch(IllegalArgumentException ex){
+            } catch (IllegalArgumentException ex) {
                 JOptionPane.showMessageDialog(frame, ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
             }
         });
 
-        // Delete button listener
+        // Delete
         deleteBtn.addActionListener(e -> {
             int selectedRow = table.getSelectedRow();
-            if(selectedRow == -1){
+            if (selectedRow == -1) {
                 JOptionPane.showMessageDialog(frame, "Please select an entry to delete.", "Error", JOptionPane.ERROR_MESSAGE);
                 return;
             }
@@ -108,32 +132,102 @@ public class PasswordManagerUI {
             refreshTable();
         });
 
+        // Retrieve
         retrieveBtn.addActionListener(e -> {
             int selectedRow = table.getSelectedRow();
-            if(selectedRow == -1){
+            if (selectedRow == -1) {
                 JOptionPane.showMessageDialog(frame, "Please select an entry to retrieve.", "Error", JOptionPane.ERROR_MESSAGE);
-                return;
-            }else{
-                JOptionPane.showMessageDialog(frame, "Website/App: " + controller.getEntry(selectedRow).getSite() + "\nUsername: " + controller.getEntry(selectedRow).getUsername() + "\nPassword: "   + controller.getEntry(selectedRow).getPassword(), "Info", JOptionPane.INFORMATION_MESSAGE);
+            } else {
+                JOptionPane.showMessageDialog(frame,
+                    "Website/App: " + controller.getEntry(selectedRow).getSite() +
+                    "\nUsername: "  + controller.getEntry(selectedRow).getUsername() +
+                    "\nPassword: "  + controller.getEntry(selectedRow).getPassword(),
+                    "Info", JOptionPane.INFORMATION_MESSAGE);
             }
         });
 
-        // clear button listener 
+        // Clear
         clearBtn.addActionListener(e -> clearFields());
 
-        // exit button listener
+        // Check selected password
+        checkBtn.addActionListener(e -> {
+            int selectedRow = table.getSelectedRow();
+            if (selectedRow == -1) {
+                JOptionPane.showMessageDialog(frame, "Please select an entry to check.", "Error", JOptionPane.ERROR_MESSAGE);
+                return;
+            }
+            checkBtn.setEnabled(false);
+            checkBtn.setText("Checking…");
+            int row = selectedRow;
+            new SwingWorker<String, Void>() {
+                @Override protected String doInBackground() {
+                    return controller.auditEntry(row);
+                }
+                @Override protected void done() {
+                    checkBtn.setEnabled(true);
+                    checkBtn.setText("Check Password");
+                    try {
+                        String result = get();
+                        if (result == null) {
+                            JOptionPane.showMessageDialog(frame, "✓  Password is safe.", "Check Password", JOptionPane.INFORMATION_MESSAGE);
+                        } else {
+                            JOptionPane.showMessageDialog(frame, result, "⚠  Password at Risk", JOptionPane.WARNING_MESSAGE);
+                        }
+                    } catch (Exception ex) {
+                        JOptionPane.showMessageDialog(frame, "Error: " + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+                    }
+                }
+            }.execute();
+        });
+
+        // Check all passwords
+        checkAllBtn.addActionListener(e -> {
+            if (controller.getEntryCount() == 0) {
+                JOptionPane.showMessageDialog(frame, "No entries to check.", "Check All Passwords", JOptionPane.INFORMATION_MESSAGE);
+                return;
+            }
+            checkAllBtn.setEnabled(false);
+            checkAllBtn.setText("Checking…");
+            new SwingWorker<String, Void>() {
+                @Override protected String doInBackground() {
+                    return controller.auditAllEntries();
+                }
+                @Override protected void done() {
+                    checkAllBtn.setEnabled(true);
+                    checkAllBtn.setText("Check All Passwords");
+                    try {
+                        String report = get();
+                        if (report == null) {
+                            JOptionPane.showMessageDialog(frame, "✓  All passwords are safe.", "Check All Passwords", JOptionPane.INFORMATION_MESSAGE);
+                        } else {
+                            JTextArea textArea = new JTextArea(report);
+                            textArea.setEditable(false);
+                            textArea.setFont(new Font("Monospaced", Font.PLAIN, 12));
+                            JScrollPane sp = new JScrollPane(textArea);
+                            sp.setPreferredSize(new Dimension(500, 200));
+                            JOptionPane.showMessageDialog(frame, sp, "⚠  Passwords at Risk", JOptionPane.WARNING_MESSAGE);
+                        }
+                    } catch (Exception ex) {
+                        JOptionPane.showMessageDialog(frame, "Error: " + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+                    }
+                }
+            }.execute();
+        });
+
+        // Exit
         exitBtn.addActionListener(e -> frame.dispose());
 
         buttons.add(addBtn);
         buttons.add(retrieveBtn);
         buttons.add(clearBtn);
         buttons.add(deleteBtn);
+        buttons.add(checkBtn);
+        buttons.add(checkAllBtn);
         buttons.add(exitBtn);
 
         root.add(buttons, BorderLayout.SOUTH);
     }
 
-    // Refreshes the table with current entries from the controller
     private void refreshTable() {
         tableModel.setRowCount(0);
         for (int i = 0; i < controller.getEntryCount(); i++) {
@@ -145,25 +239,22 @@ public class PasswordManagerUI {
         }
     }
 
-    // called by PasswordManager main method
     public void show() {
         frame.setVisible(true);
     }
 
-    // helper method to clear input fields, not useful yet but will be later
     private void clearFields() {
         siteField.setText("");
         userField.setText("");
         passField.setText("");
         siteField.requestFocusInWindow();
     }
-    // helper method to add label and field to card panel
+
     private static void addRow(JPanel panel, GridBagConstraints c, int row, String labelText, JComponent field) {
         c.gridx = 0;
         c.gridy = row;
         c.weightx = 0;
         panel.add(new JLabel(labelText), c);
-
         c.gridx = 1;
         c.weightx = 1;
         panel.add(field, c);
