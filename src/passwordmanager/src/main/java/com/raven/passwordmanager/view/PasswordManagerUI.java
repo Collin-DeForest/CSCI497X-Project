@@ -25,8 +25,22 @@ public class PasswordManagerUI {
 
         // main frame setup
         frame = new JFrame("Local Password Manager");
-        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        frame.setSize(700, 550);
+
+        // if the user exits using the top right X encrypt the file.
+        frame.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
+        frame.addWindowListener(new java.awt.event.WindowAdapter(){
+            @Override
+            public void windowClosing(java.awt.event.WindowEvent e) {
+                try{
+                    VaultEncryption.encrypt(controller.getAllEntries(), key);
+                }catch(Exception ex){
+                    JOptionPane.showMessageDialog(frame, "Error saving vault.", "Error", JOptionPane.ERROR_MESSAGE);
+                }
+                frame.dispose();
+                System.exit(0);
+            }
+        });
+        frame.setSize(750, 550);
         frame.setLocationRelativeTo(null);
 
         JPanel root = new JPanel(new BorderLayout(16, 16));
