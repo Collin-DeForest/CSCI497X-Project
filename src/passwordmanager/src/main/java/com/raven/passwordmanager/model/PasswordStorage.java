@@ -14,6 +14,10 @@ public class PasswordStorage{
     public void deleteEntry(int index){
         entries.remove(index);
     }
+    
+    public void updateEntry(int index, String newPassword){
+        entries.get(index).setPassword(newPassword);
+    }
 
     public PasswordEntry getEntry(int index){
         return entries.get(index);

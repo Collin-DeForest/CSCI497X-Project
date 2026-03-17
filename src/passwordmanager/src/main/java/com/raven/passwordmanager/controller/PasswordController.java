@@ -4,9 +4,9 @@ import java.util.List;
 
 import javax.swing.JOptionPane;
 
+import com.raven.passwordmanager.model.MasterPasswordManager;
 import com.raven.passwordmanager.model.PasswordEntry;
 import com.raven.passwordmanager.model.PasswordStorage;
-import com.raven.passwordmanager.model.MasterPasswordManager;
 import com.raven.passwordmanager.model.TwoFactor;
 import com.raven.passwordmanager.view.PasswordManager2FA;
 import com.raven.passwordmanager.view.PasswordManagerSignIn;
@@ -59,6 +59,10 @@ private final TwoFactor twoFA;
 
     public void deleteEntry(int index){
         model.deleteEntry(index);
+    }
+
+    public void updateEntry(int index, String newPassword){
+        model.updateEntry(index, newPassword);
     }
 
     public PasswordEntry getEntry(int index){

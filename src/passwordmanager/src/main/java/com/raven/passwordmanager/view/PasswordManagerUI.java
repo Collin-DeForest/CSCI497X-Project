@@ -1,13 +1,32 @@
 package com.raven.passwordmanager.view;
-import javax.swing.*;
+import java.awt.BorderLayout;
+import java.awt.Color;
+import java.awt.FlowLayout;
+import java.awt.Font;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
+import java.awt.GridLayout;
+import java.awt.Insets;
+import java.util.List;
+
+import javax.swing.BorderFactory;
+import javax.swing.JButton;
+import javax.swing.JComponent;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.JPasswordField;
+import javax.swing.JScrollPane;
+import javax.swing.JSplitPane;
+import javax.swing.JTable;
+import javax.swing.JTextField;
 import javax.swing.border.EmptyBorder;
 import javax.swing.table.DefaultTableModel;
+
 import com.raven.passwordmanager.controller.PasswordController;
 import com.raven.passwordmanager.model.PasswordEntry;
 import com.raven.passwordmanager.model.VaultEncryption;
-import java.util.List;
-
-import java.awt.*;
 
 public class PasswordManagerUI {
 
@@ -97,6 +116,7 @@ public class PasswordManagerUI {
         JPanel buttons = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 0));
         JButton addBtn = new JButton("Add");
         JButton retrieveBtn = new JButton("Retrieve");
+        JButton updateBtn = new JButton("Update");
         JButton deleteBtn = new JButton("Delete");
         JButton clearBtn = new JButton("Clear");
         JButton exitBtn = new JButton("Exit");
@@ -109,6 +129,25 @@ public class PasswordManagerUI {
                 clearFields();
             }catch(IllegalArgumentException ex){
                 JOptionPane.showMessageDialog(frame, ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+            }
+        });
+
+        // Update button listener
+        updateBtn.addActionListener(e -> {
+            int selectedRow = table.getSelectedRow();
+            if (selectedRow == -1) {
+                JOptionPane.showMessageDialog(frame, "Please select an entry to update.", "Error", JOptionPane.ERROR_MESSAGE);
+                return;
+            }
+            // Prompt for new password
+            String newPassword = JOptionPane.showInputDialog(frame, "Enter new password:");
+            if (newPassword != null && !newPassword.isEmpty()) {
+                try {
+                    controller.updateEntry(selectedRow, newPassword);
+                    refreshTable();
+                } catch (IllegalArgumentException ex) {
+                    JOptionPane.showMessageDialog(frame, ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+                }
             }
         });
 
@@ -152,6 +191,7 @@ public class PasswordManagerUI {
         });
 
         buttons.add(addBtn);
+        buttons.add(updateBtn);
         buttons.add(retrieveBtn);
         buttons.add(clearBtn);
         buttons.add(deleteBtn);
