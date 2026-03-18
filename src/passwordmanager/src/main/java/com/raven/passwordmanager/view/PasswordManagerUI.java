@@ -62,7 +62,7 @@ public class PasswordManagerUI {
                 System.exit(0);
             }
         });
-        frame.setSize(750, 550);
+        frame.setSize(950, 550);
         frame.setLocationRelativeTo(null);
 
         JPanel root = new JPanel(new BorderLayout(16, 16));
