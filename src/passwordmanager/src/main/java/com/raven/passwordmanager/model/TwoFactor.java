@@ -1,31 +1,37 @@
 package com.raven.passwordmanager.model;
 
-import com.eatthepath.otp.TimeBasedOneTimePasswordGenerator;
-import org.apache.commons.codec.binary.Base32;
+import java.io.BufferedWriter;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.time.Instant;
 
 import javax.crypto.KeyGenerator;
 import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
-import java.io.*;
-import java.nio.file.Files;
-import java.nio.file.Paths;
-import java.time.Instant;
+
+import org.apache.commons.codec.binary.Base32;
+
+import com.eatthepath.otp.TimeBasedOneTimePasswordGenerator;
 
 public class TwoFactor {
 
     private final TimeBasedOneTimePasswordGenerator totp;
     private final SecretKey key;
     private final String base32Secret;
+    private final boolean newlyGenerated;
 
     public TwoFactor() {
         String storedSecret = loadSecretFromFile();
         if (storedSecret != null) {
+            this.newlyGenerated = false;
             // Use the stored secret if it exists
             this.base32Secret = storedSecret;
             byte[] decodedKey = new Base32().decode(this.base32Secret); 
             this.key = new SecretKeySpec(decodedKey, "HmacSHA1");
             this.totp = new TimeBasedOneTimePasswordGenerator();
         } else {
+            this.newlyGenerated = true;
             // Generate a new key if no secret is found
             this.totp = new TimeBasedOneTimePasswordGenerator();
             KeyGenerator keyGen;
@@ -72,7 +78,7 @@ public class TwoFactor {
     }
 
     public boolean isSetupRequired() {
-        return !Files.exists(Paths.get("two_factor_secret.txt"));
+        return newlyGenerated;
     }
 
     public boolean verify(String code) {

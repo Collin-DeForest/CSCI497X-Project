@@ -20,9 +20,12 @@ import javax.swing.JPasswordField;
 import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
 import javax.swing.JTable;
+import javax.swing.JTextArea;
 import javax.swing.JTextField;
+import javax.swing.SwingWorker;
 import javax.swing.border.EmptyBorder;
 import javax.swing.table.DefaultTableModel;
+import java.awt.Dimension;
 
 import com.raven.passwordmanager.controller.PasswordController;
 import com.raven.passwordmanager.model.PasswordEntry;
@@ -44,8 +47,22 @@ public class PasswordManagerUI {
 
         // main frame setup
         frame = new JFrame("Local Password Manager");
-        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        frame.setSize(700, 550);
+
+        // if the user exits using the top right X encrypt the file.
+        frame.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
+        frame.addWindowListener(new java.awt.event.WindowAdapter(){
+            @Override
+            public void windowClosing(java.awt.event.WindowEvent e) {
+                try{
+                    VaultEncryption.encrypt(controller.getAllEntries(), key);
+                }catch(Exception ex){
+                    JOptionPane.showMessageDialog(frame, "Error saving vault.", "Error", JOptionPane.ERROR_MESSAGE);
+                }
+                frame.dispose();
+                System.exit(0);
+            }
+        });
+        frame.setSize(750, 550);
         frame.setLocationRelativeTo(null);
 
         JPanel root = new JPanel(new BorderLayout(16, 16));
@@ -53,13 +70,10 @@ public class PasswordManagerUI {
         frame.setContentPane(root);
 
         // Header
-        JPanel header = new JPanel(new GridLayout(2, 1));
+        JPanel header = new JPanel(new GridLayout(1, 1));
         JLabel title = new JLabel("Password Vault");
         title.setFont(title.getFont().deriveFont(Font.BOLD, 20f));
-        JLabel subtitle = new JLabel("Phase 1: UI skeleton (not functional yet)");
-        subtitle.setFont(subtitle.getFont().deriveFont(13f));
         header.add(title);
-        header.add(subtitle);
         root.add(header, BorderLayout.NORTH);
 
         // Card panel for inputs
@@ -78,9 +92,31 @@ public class PasswordManagerUI {
         userField = new JTextField();
         passField = new JPasswordField();
 
+        JButton generatePassBtn = new JButton("Generate");
+        generatePassBtn.addActionListener(e -> passField.setText(controller.generatePassword()));
+
+        JButton toggleVisBtn = new JButton("Show");
+        toggleVisBtn.addActionListener(e -> {
+            if (passField.getEchoChar() == 0) {
+                passField.setEchoChar('•');
+                toggleVisBtn.setText("Show");
+            } else {
+                passField.setEchoChar((char) 0);
+                toggleVisBtn.setText("Hide");
+            }
+        });
+
         addRow(card, c, 0, "Website / App", siteField);
         addRow(card, c, 1, "Username", userField);
         addRow(card, c, 2, "Password", passField);
+
+        c.gridx = 2;
+        c.gridy = 2;
+        c.weightx = 0;
+        card.add(generatePassBtn, c);
+
+        c.gridx = 3;
+        card.add(toggleVisBtn, c);
 
         // Table to display saved entries
         String[] columns = {"Website / App", "Username", "Password"};
@@ -112,14 +148,15 @@ public class PasswordManagerUI {
         splitPane.setDividerLocation(200);
         root.add(splitPane, BorderLayout.CENTER);
 
-        // Button bar (clear, add, retrieve, delete, exit)
+        // Button bar 
         JPanel buttons = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 0));
         JButton addBtn = new JButton("Add");
         JButton retrieveBtn = new JButton("Retrieve");
         JButton updateBtn = new JButton("Update");
         JButton deleteBtn = new JButton("Delete");
         JButton clearBtn = new JButton("Clear");
-        JButton exitBtn = new JButton("Exit");
+        JButton checkBtn = new JButton("Check Password");
+        JButton checkAllBtn = new JButton("Check All Passwords");
         
         // Add button listener
         addBtn.addActionListener(e -> {
@@ -180,14 +217,69 @@ public class PasswordManagerUI {
         // clear button listener 
         clearBtn.addActionListener(e -> clearFields());
 
-        // exit button listener, encrypts and saves all entires to vault.txt then closes the app
-        exitBtn.addActionListener(e -> {
-            try{
-                VaultEncryption.encrypt(controller.getAllEntries(), key);
-            }catch(Exception ex){
-                JOptionPane.showMessageDialog(frame, "Error saving vault.", "Error", JOptionPane.ERROR_MESSAGE);
+        // Check selected password for strength and breaches
+        checkBtn.addActionListener(e -> {
+            int selectedRow = table.getSelectedRow();
+            if(selectedRow == -1){
+                JOptionPane.showMessageDialog(frame, "Please select an entry to check.", "Error", JOptionPane.ERROR_MESSAGE);
+                return;
             }
-            frame.dispose();
+            checkBtn.setEnabled(false);
+            checkBtn.setText("Checking…");
+            int row = selectedRow;
+            new SwingWorker<String, Void>() {
+                @Override protected String doInBackground() {
+                    return controller.auditEntry(row);
+                }
+                @Override protected void done() {
+                    checkBtn.setEnabled(true);
+                    checkBtn.setText("Check Password");
+                    try {
+                        String result = get();
+                        if(result == null){
+                            JOptionPane.showMessageDialog(frame, "✓  Password is safe.", "Check Password", JOptionPane.INFORMATION_MESSAGE);
+                        }else{
+                            JOptionPane.showMessageDialog(frame, result, "⚠  Password at Risk", JOptionPane.WARNING_MESSAGE);
+                        }
+                    }catch(Exception ex){
+                        JOptionPane.showMessageDialog(frame, "Error: " + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+                    }
+                }
+            }.execute();
+        });
+
+        // Check all passwords for strength and breaches, only reports at-risk entries
+        checkAllBtn.addActionListener(e -> {
+            if(controller.getEntryCount() == 0){
+                JOptionPane.showMessageDialog(frame, "No entries to check.", "Check All Passwords", JOptionPane.INFORMATION_MESSAGE);
+                return;
+            }
+            checkAllBtn.setEnabled(false);
+            checkAllBtn.setText("Checking…");
+            new SwingWorker<String, Void>() {
+                @Override protected String doInBackground() {
+                    return controller.auditAllEntries();
+                }
+                @Override protected void done() {
+                    checkAllBtn.setEnabled(true);
+                    checkAllBtn.setText("Check All Passwords");
+                    try {
+                        String report = get();
+                        if(report == null){
+                            JOptionPane.showMessageDialog(frame, "✓  All passwords are safe.", "Check All Passwords", JOptionPane.INFORMATION_MESSAGE);
+                        }else{
+                            JTextArea textArea = new JTextArea(report);
+                            textArea.setEditable(false);
+                            textArea.setFont(new Font("Monospaced", Font.PLAIN, 12));
+                            JScrollPane sp = new JScrollPane(textArea);
+                            sp.setPreferredSize(new Dimension(500, 200));
+                            JOptionPane.showMessageDialog(frame, sp, "⚠  Passwords at Risk", JOptionPane.WARNING_MESSAGE);
+                        }
+                    }catch(Exception ex){
+                        JOptionPane.showMessageDialog(frame, "Error: " + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+                    }
+                }
+            }.execute();
         });
 
         buttons.add(addBtn);
@@ -195,7 +287,8 @@ public class PasswordManagerUI {
         buttons.add(retrieveBtn);
         buttons.add(clearBtn);
         buttons.add(deleteBtn);
-        buttons.add(exitBtn);
+        buttons.add(checkBtn);
+        buttons.add(checkAllBtn);
 
         root.add(buttons, BorderLayout.SOUTH);
 
@@ -226,6 +319,7 @@ public class PasswordManagerUI {
         passField.setText("");
         siteField.requestFocusInWindow();
     }
+
     // helper method to add label and field to card panel
     private static void addRow(JPanel panel, GridBagConstraints c, int row, String labelText, JComponent field) {
         c.gridx = 0;
