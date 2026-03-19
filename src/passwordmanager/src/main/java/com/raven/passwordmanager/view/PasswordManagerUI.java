@@ -134,6 +134,8 @@ public class PasswordManagerUI {
             for(PasswordEntry entry : entries){
                 controller.addEntry(entry.getSite(), entry.getUsername(), entry.getPassword());
             }
+        }catch(javax.crypto.AEADBadTagException | IllegalArgumentException ex){
+            JOptionPane.showMessageDialog(null, "Vault file has been tampered with\n Passwords have been reset", "Security Error", JOptionPane.ERROR_MESSAGE);
         }catch(Exception ex){
             JOptionPane.showMessageDialog(null, "Error loading vault.", "Error", JOptionPane.ERROR_MESSAGE);
         }
