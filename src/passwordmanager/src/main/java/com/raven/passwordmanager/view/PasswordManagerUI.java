@@ -154,7 +154,6 @@ public class PasswordManagerUI {
         JButton retrieveBtn = new JButton("Retrieve");
         JButton updateBtn = new JButton("Update");
         JButton deleteBtn = new JButton("Delete");
-        JButton clearBtn = new JButton("Clear");
         JButton checkBtn = new JButton("Check Password");
         JButton checkAllBtn = new JButton("Check All Passwords");
         
@@ -213,9 +212,6 @@ public class PasswordManagerUI {
                 "Website / App: " + site + "\nUsername: " + username + "\nPassword: " + password,
                 "Login Information", JOptionPane.INFORMATION_MESSAGE);
         });
-
-        // clear button listener 
-        clearBtn.addActionListener(e -> clearFields());
 
         // Check selected password for strength and breaches
         checkBtn.addActionListener(e -> {
@@ -285,7 +281,6 @@ public class PasswordManagerUI {
         buttons.add(addBtn);
         buttons.add(updateBtn);
         buttons.add(retrieveBtn);
-        buttons.add(clearBtn);
         buttons.add(deleteBtn);
         buttons.add(checkBtn);
         buttons.add(checkAllBtn);
