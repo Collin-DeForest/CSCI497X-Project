@@ -1,16 +1,28 @@
 package com.raven.passwordmanager.view;
 
+import java.awt.Color;
+import java.awt.Component;
+import java.awt.FlowLayout;
+import java.awt.Font;
+import java.awt.image.BufferedImage;
+import java.util.HashMap;
+import java.util.Map;
+
+import javax.swing.BorderFactory;
+import javax.swing.BoxLayout;
+import javax.swing.ImageIcon;
+import javax.swing.JButton;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.JTextField;
+
 import com.google.zxing.BarcodeFormat;
 import com.google.zxing.EncodeHintType;
 import com.google.zxing.MultiFormatWriter;
 import com.google.zxing.common.BitMatrix;
 import com.raven.passwordmanager.model.TwoFactor;
-
-import javax.swing.*;
-import java.awt.*;
-import java.awt.image.BufferedImage;
-import java.util.HashMap;
-import java.util.Map;
 
 public class PasswordManager2FA {
     private final JFrame frame;
@@ -34,6 +46,13 @@ public class PasswordManager2FA {
             JPanel QRCodePanel = new JPanel(new FlowLayout());
             QRCodePanel.add(QRCodeLabel);
             panel.add(QRCodePanel);
+
+            JLabel warningLabel = new JLabel("Do not exit at this time");
+            warningLabel.setForeground(Color.RED);
+            warningLabel.setFont(new Font("Arial", Font.BOLD, 14));
+            warningLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
+            panel.add(warningLabel);
+
         }
         
 
