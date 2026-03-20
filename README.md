@@ -1,7 +1,9 @@
-README for 497 project with Joe, Colin and Zach. 
+README for 497 project with Joe, Collin and Zach. 
 
-Local Password Manager
+Local Secure Password Manager
 
-to run the basic UI: 
-javac -d out *.java
-java -cp out PasswordManager
+to run the program you'll need maven installed and to run these in the directory containing pom.xml: 
+
+mvn clean compile
+
+mvn compile exec:java
