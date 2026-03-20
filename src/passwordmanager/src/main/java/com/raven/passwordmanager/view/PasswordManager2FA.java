@@ -44,9 +44,7 @@ public class PasswordManager2FA {
         codePanel.add(codeField);
         panel.add(codePanel);
 
-        // Rememeber to remove Dev skip at end of project
         JButton verifyButton = new JButton("Verify");
-        JButton skipButton = new JButton("Skip (Dev Only)");
 
         verifyButton.addActionListener(e -> {
             String entered = codeField.getText();
@@ -62,13 +60,7 @@ public class PasswordManager2FA {
             }
         });
 
-        skipButton.addActionListener(e -> {
-            frame.dispose();
-            onSuccess.run();
-        });
-
         JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
-        buttonPanel.add(skipButton);
         buttonPanel.add(verifyButton);
         panel.add(buttonPanel);
 
